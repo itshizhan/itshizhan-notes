@@ -344,9 +344,107 @@ export default class YourComponent extends Vue {
 
 ## vuex-class使用
 
+依赖
+
+- [Vue](https://github.com/vuejs/vue)
+- [Vuex](https://github.com/vuejs/vuex)
+- [vue-class-component](https://github.com/vuejs/vue-class-component)
+
+当前提供了5个装饰器：
+
+- `@State`
+- `@Getter`
+- `@Action`
+- `@Mutation`
+- `@namespace`
 
 
 
+::: tip 示例解析
+
+----
+
+:::
+
+```typescript
+// ********** 核心代码 **************
+
+// index.ts
+// 导入 actions，getters,mutations 等 
+export interface IBookState {
+    id:string,// 图书id
+    url: string, // 图书url 
+    desc: string,// 简介 
+    price: number,// 价格
+    isDiscount:boolean // 是否打折     
+}
+interface State {
+  books: IBookState[],
+}
+
+let state: State = {
+  books: [],
+}
+
+export default new Vuex.Store({
+  state,
+  actions,
+  getters,
+  mutations
+})
+
+//getters.ts
+export default const getters: GetterTree<any, any> = {
+  discountBooks(state:any): IBookState {
+    const { books } = state;
+    return books.filter(
+      (el: IBookState) => !! el.isDiscount
+    );
+}
+
+
+// types.ts
+export default {
+  SET_BOOKS: 'SET_BOOKS'
+}
+
+// actions.ts
+export default const actions: ActionTree<any, any> = {
+  // 获取图书列表
+  getBooklist({state,commit}){
+    api.getShoplist((shoplist:any)=>{
+      // 更新图书列表状态state
+      commit(TYPES.SET_BOOKS,shoplist)
+    })
+  }
+}
+
+
+// mutations.ts
+const mutations: MutationTree<any> = {
+  [TYPES.SET_BOOKS](state, books): void {
+    state.books = books
+  }
+}
+export default mutations
+
+
+// 组件中使用
+export default class BookList extends Vue {
+	//初始化状态,图书列表
+	@State books!: IBookState[];
+	//计算属性，打折的图书列表
+	@Getter discountBooks: IBookState[];
+
+	// 注入action
+	@Action getBooklist!:()=> void;
+
+	created() {
+		//this.$store.dispatch('getBooklist'); // 传统写法
+		this.getBooklist();
+	}
+}
+```
 
 
 
