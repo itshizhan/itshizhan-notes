@@ -1,0 +1,30 @@
+{
+  "name": "itshizhan-notes",
+  "version": "1.0.0",
+  "description": "itshizhan notes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itshizhan/itshizhan-notes.git"
+  },
+  "keywords": [
+    "react",
+    "vue",
+    "typescript",
+    "node"
+  ],
+  "author": "itshizhan@163.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/itshizhan/itshizhan-notes/issues"
+  },
+  "homepage": "https://github.com/itshizhan/itshizhan-notes#readme",
+  "devDependencies": {
+    "vuepress": "^0.10.2"
+  }
+}
