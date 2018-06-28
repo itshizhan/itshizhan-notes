@@ -37,7 +37,7 @@ const baseConfig = {
         loader: 'ts-loader',
         exclude: /node_modules/,
         options: {
-          appendTsSuffixTo: [/\.vue$/],
+          appendTsSuffixTo: [/\.vue$/],   // 为所有.vue 添加ts后缀
         }
       }
     ]
@@ -132,17 +132,150 @@ import shoplist from from '@/components/Shoplist.vue'
   components:{
     "v-header": Header, // html 标签不能作为vue组件标签名
      shoplist
+  },
+  props: {
+    propMessage: String
   }
   template: '<button @click="onClick">Click!</button>'
 })
 export default class MyComponent extends Vue {
-  // 初始数据可以直接声明为实例的属性
-  message: string = 'Hello!'
+  data () {
+    return {
+      // 响应式的
+      baz: undefined
+    }
+  } 
+  // 非响应式的
+  foo = undefined
+  // 响应式的
+  bar = null
 
-  // 组件方法也可以直接声明为实例的方法
+  //初始数据可以直接声明为实例的属性
+  firstName: string = 'hello'
+  lastName:string = 'typescript'
+
+  //computed计算属性
+   get fullName() {
+       return this.firstName + this.lastName;
+   }
+
+  // 可以事宜prop值初始化数据
+  helloMsg = 'Hello, ' + this.propMessage
+
+  //组件方法也可以直接声明为实例的方法
   onClick (): void {
-    window.alert(this.message)
+    window.alert(this.message);
+    this.$refs.helloComponent.sayHello()
+  }
+
+  bar = () => {
+    //修改失败！！！ 此时this 非Vue instance
+    this.helloMsg = "modify hello"
+  }
+
+   //钩子
+   mounted() {
+	this.onClick();
+   }
+
+  // dynamic component
+  $refs!: {
+    helloComponent: Hello
   }
 }
 ```
+
+
+
+**官方总结如下：**
+
+1. `methods`  方法可以直接声明为类成员方法
+2. 初始化数据、计算属性可以直接声明为类的属性
+3. data函数，render函数，以及所有的生命周期钩子可以直接声明为类成员方法。
+4. 所有选项可以放置在`@Component`装饰器中。
+5. 自定义方法如果需要访问`this`，不能使用箭头函数。
+6. `undefined`直接初始化的类属性是非相应式的，应该使用`null`，或data中
+7. 可以通过 $refs!:{ },定义类型
+
+
+
+
+
+##   vue-property-decorator使用
+
+
+
+## vuex-class使用
+
+
+
+
+
+## Vue Router使用
+
+
+
+```javascript
+import Vue, { AsyncComponent } from 'vue'
+import Router, { RouteConfig, Route, NavigationGuard } from 'vue-router'
+
+import home: AsyncComponent = (): any => import(/* webpackChunkName: "home" */ '@/pages/home/index.vue')
+// ... 其他组件
+
+const routers: RouteConfig[] = [
+  {
+    path: '/home',
+    comment: 'home'
+  }
+  // ...其他 routers
+]
+```
+
+如果你想组件内使用 Vue Router 导航钩子，必须注册一次：
+
+```javascript
+import Component from 'vue-class-component'
+
+// Register the router hooks with their names
+Component.registerHooks([
+  'beforeRouteEnter',
+  'beforeRouteLeave',
+  'beforeRouteUpdate' // for vue-router 2.2+
+])
+```
+
+
+
+## 常见问题
+
+1. ts 无法识别$ref
+
+   ```javascript
+   // 使用类型断言，因为我们可以确定ref 返回的是HTMLDivElement
+   this.$refs.inputEl as HTMLDivElement;
+   // 或者 自定$refs 的类型
+   $refs: {
+       inputEl: HTMLDivElement
+   }
+   
+   ```
+
+
+
+2.  让 vue 识别全局方法/变量
+
+比如，一些组件的全局方法，`this.$message()` 或 `this.$modal()` 会报错，因为`$message`等属性，并没有在 `vue`实例中声明。可以通过以下方式声明。
+
+```javascript
+//https://cn.vuejs.org/v2/guide/typescript.html#%E6%8E%A8%E8%8D%90%E9%85%8D%E7%BD%AE
+// 声明全局方法
+declare module 'vue/types/vue' {
+  interface Vue {
+    $Message: any,
+    $Modal: any
+  }
+}
+```
+
+
 
