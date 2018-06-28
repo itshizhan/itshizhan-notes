@@ -199,13 +199,156 @@ export default class MyComponent extends Vue {
 
 
 
+####   createDecorator 功能函数
+
+vue-class-component 提供了一个工具函数，可以创建自定义的装饰器，例如：
+
+```javascript
+// decorators.js
+import { createDecorator } from 'vue-class-component'
+
+export const NoCache = createDecorator((options, key) => {
+  // component options should be passed to the callback
+  // and update for the options object affect the component
+  options.computed[key].cache = false
+})
+
+// 使用NoCache
+import { NoCache } from './decorators'
+
+@Component
+class MyComp extends Vue {
+  // the computed property will not be cached
+  @NoCache
+  get random () {
+    return Math.random()
+  }
+}
+```
+
+
+
+createDecorator 接收一个函数callback作为第一个参数，此函数callback 有三个参数：
+
+- `options`: vue 组件的选项对象
+- `key`: 装饰器需要装饰的属性和方法的key
+- `parameterIndex`: 如果使用自定义装饰器作为参数时，装饰器参数的索引
+
+**createDecorator源码：**
+
+```typescript
+// 接收一个factory 函数，返回一个装饰器VueDecorator
+export function createDecorator (factory: (options: ComponentOptions<Vue>, key: string, 	index: number) => void): VueDecorator {
+  return (target: Vue | typeof Vue, key?: any, index?: any) => {
+    const Ctor = typeof target === 'function'
+      ? target as DecoratedClass
+      : target.constructor as DecoratedClass
+    if (!Ctor.__decorators__) {
+      Ctor.__decorators__ = []
+    }
+    if (typeof index !== 'number') {
+      index = undefined
+    }
+    Ctor.__decorators__.push(options => factory(options, key, index))
+  }
+}
+```
+
 
 
 ##   vue-property-decorator使用
 
 
 
+**vue-property-decorator依赖于vue-class-component, 其源码非常简单，不到200行。**
+
+**当前最新版本提供了8个decorators：**
+
+- `@Emit`
+- `@Inject`
+- `@Mixins` (the helper function named `mixins` defined at `vue-class-component`)
+- `@Model`
+- `@Prop`
+- `@Provide`
+- `@Watch`
+- `@Component` (**from** `vue-class-component`)
+
+
+
+::: tip 示例解析：
+
+-------
+
+:::
+
+```typescript
+import { Vue, Component, 
+        Prop,Watch,Model,Emit,Inject,Provide,Mixins } from 'vue-property-decorator'
+
+@Component
+export default class YourComponent extends Vue {
+  // 定义propA,类型为number，注意使用了！进行类型断言(ts2.7以上要求)
+  @Prop(Number) propA!: number 
+  
+  // 定义属性 propA，类型string，同时指定了默认值
+  @Prop({ default: 'default value' }) propB!: string
+  
+  // 定义属性 propC，类型为 string | boolean
+  @Prop([String, Boolean]) propC: string | boolean
+
+  // 自定义组件在使用 v-model 时定制 prop 和 event
+  /** 相当于
+  props: {
+    checked: {
+      type: Boolean
+    },
+    model: {
+      prop: 'checked',
+      event: 'change'
+    }
+  }*/
+  @Model('change', { type: Boolean }) checked!: boolean
+  
+  // 相对watch选项，child监听的表达式，onChildChanged为回调函数
+  @Watch('child')
+  onChildChanged(val: string, oldVal: string) { }
+
+  // 是否深度监听，并立即调用
+  @Watch('person', { immediate: true, deep: true })
+  onPersonChanged(val: Person, oldVal: Person) { }
+
+
+  // 注入事件的回调函数，例如 <button @click="addToCount(1)"> 
+  @Emit()
+  addToCount(n: number) {
+    this.count += n
+  }
+
+  // 注入事件的回调函数，并在回调执行完后触发reset事件，相对,this.$emit('reset')
+  @Emit('reset')
+  resetCount() {
+    this.count = 0
+  }
+
+  // 相应vue的Inject 和Provide选项
+  @Inject() foo!: string
+  @Provide() foo = 'foo'
+  
+}
+
+```
+
+
+
+
+
 ## vuex-class使用
+
+
+
+
+
+
 
 
 
@@ -243,6 +386,10 @@ Component.registerHooks([
   'beforeRouteUpdate' // for vue-router 2.2+
 ])
 ```
+
+
+
+
 
 
 
