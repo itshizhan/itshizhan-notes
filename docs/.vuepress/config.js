@@ -23,6 +23,10 @@ module.exports = {
         'typescript-basic',
         'typescript-advance',
         'vue-typescript-notes-one'
+      ],
+      '/tools/':[
+        '',
+        'RegExp'
       ]
     }
   }
